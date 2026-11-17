@@ -1,0 +1,17 @@
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/
+src-tauri/resources/
+native/bin/
+native/obj/
+native/publish/
+telemetry-server/data/
+telemetry-server/__pycache__/
+*.db
+*.pyc
+*.exe
+*.zip
+.hash-secret
+*.log
+

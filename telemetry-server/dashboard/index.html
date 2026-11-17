@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>GPU Fleet Health</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span><span></span></div>
+        <div><h1>GPU Fleet Health</h1><p>KENRI GPU Monitor control center</p></div>
+      </div>
+      <div class="top-actions">
+        <div class="server-state"><i></i><span id="server-status">Connecting</span></div>
+        <button class="refresh-button" id="refresh" type="button" aria-label="Refresh dashboard">Refresh</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="overview" aria-label="Fleet overview">
+        <article class="metric-card metric-online"><span class="metric-label">Online now</span><strong id="online-count">—</strong><small id="online-caption">Checking fleet</small></article>
+        <article class="metric-card"><span class="metric-label">Total devices</span><strong id="total-count">—</strong><small>Consented installations</small></article>
+        <article class="metric-card metric-critical"><span class="metric-label">Critical alerts</span><strong id="critical-count">—</strong><small id="warning-caption">— warnings</small></article>
+        <article class="metric-card metric-temp"><span class="metric-label">Average temperature</span><strong id="average-temp">—</strong><small>Latest device samples</small></article>
+      </section>
+
+      <section class="workspace">
+        <article class="panel fleet-panel">
+          <div class="panel-heading">
+            <div><span class="eyebrow">LIVE INVENTORY</span><h2>GPU devices</h2></div>
+            <label class="search"><span>Search</span><input id="device-search" type="search" placeholder="GPU, version, device ID"></label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Device</th><th>Status</th><th>Temperature</th><th>GPU</th><th>VRAM</th><th>RAM</th><th>Version</th><th>Last seen</th></tr></thead>
+              <tbody id="device-rows"><tr><td colspan="8" class="empty">Waiting for telemetry…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
+        <aside class="panel alerts-panel">
+          <div class="panel-heading"><div><span class="eyebrow">ACTION REQUIRED</span><h2>Open alerts</h2></div><span class="count-badge" id="alert-count">0</span></div>
+          <div class="alert-list" id="alert-list"><div class="empty-card">No open alerts</div></div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="device-drawer" id="device-drawer" aria-hidden="true" aria-label="Device details">
+    <div class="drawer-header"><div><span class="eyebrow">DEVICE HEALTH</span><h2 id="drawer-title">GPU device</h2><p id="drawer-subtitle">—</p></div><button id="drawer-close" type="button" aria-label="Close device details">×</button></div>
+    <div class="drawer-body">
+      <section class="drawer-metrics" id="drawer-metrics"></section>
+      <section class="chart-panel"><div class="chart-heading"><div><h3>24-hour performance</h3><p>Temperature, GPU, VRAM, and system RAM</p></div><div class="chart-legend"><span class="legend-temp">Temp</span><span class="legend-gpu">GPU</span><span class="legend-vram">VRAM</span><span class="legend-ram">RAM</span></div></div><canvas id="history-chart" height="230"></canvas><div class="chart-empty" id="chart-empty" hidden>More samples are required to draw history.</div></section>
+      <section class="device-facts" id="device-facts"></section>
+    </div>
+  </aside>
+  <script src="/dashboard.js" defer></script>
+</body>
+</html>
