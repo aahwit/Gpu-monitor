@@ -5,7 +5,7 @@ Unicode True
 !include "FileFunc.nsh"
 
 !define APP_NAME "GPU Monitor"
-!define APP_VERSION "0.7.1"
+!define APP_VERSION "0.7.2"
 !define COMPANY "KENRI"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\GPU Monitor"
 !define SETTINGS_KEY "Software\KENRI\GPU Monitor"

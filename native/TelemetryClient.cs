@@ -65,7 +65,7 @@ internal static class TelemetryClient
             gpu = new
             {
                 index = sample.GpuIndex,
-                uuid = await ReadUuidAsync(sample.PciBus),
+                uuid = sample.GpuName.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) ? await ReadUuidAsync(sample.PciBus) : null,
                 name = sample.GpuName,
                 driver = sample.Driver,
                 vram_used_bytes = (long)sample.VramUsed,

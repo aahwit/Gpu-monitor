@@ -153,15 +153,25 @@ internal sealed class GpuWidget : Form
         try
         {
             var requested = selectedGpuIndex;
-            var reading = await Task.Run(() => ReadGpu(requested));
-            if (requested != selectedGpuIndex) return;
+            GpuData? reading = null;
+            try {
+            reading = await Task.Run(() => ReadGpu(requested));
+            if (requested == selectedGpuIndex) {
             data = reading;
             error = null;
             UpdateLocalDanger(data);
+            }
+            } catch (Exception ex) { error = ex.Message; }
             if (DateTime.UtcNow - lastTelemetry >= TimeSpan.FromMinutes(1))
             {
                 lastTelemetry = DateTime.UtcNow;
-                await SendTelemetryAsync(data);
+                if (reading != null) await SendTelemetryAsync(reading, requested == selectedGpuIndex);
+                if (AppPreferences.Load().AnonymousTelemetry)
+                foreach (var adapter in gpuAdapters.ToArray()) {
+                    if (adapter.Index == requested) continue;
+                    try { var other = await Task.Run(() => ReadGpu(adapter.Index)); await SendTelemetryAsync(other, false); }
+                    catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("GPU {0}: {1}", adapter.Index, ex.Message); }
+                }
             }
         }
         catch (Exception ex) { error = ex.Message; }
@@ -207,7 +217,7 @@ internal sealed class GpuWidget : Form
         processes = processes.OrderByDescending(item => item.VramBytes).ThenByDescending(item => item.GpuPercent).ToList();
         return new GpuData(
             gpuIndex, JsonText(device, "pci_bus", ""),
-            JsonText(root, "gpu", "GPU"), JsonText(root, "driver"), JsonText(root, "cuda"), JsonText(root, "backend"), JsonText(root, "memory_note"),
+            JsonText(adapter, "name", JsonText(root, "gpu", "GPU")), JsonText(root, "driver"), JsonText(root, "cuda"), JsonText(root, "backend"), JsonText(root, "memory_note"),
             Number(root, "vram_used"), Number(root, "vram_total"), Number(root, "shared_used"), Number(adapter, "shared_system"), Number(cpu, "pct"), Number(ram, "used"), Number(ram, "total"),
             Number(device, "util_gpu"), Number(device, "util_mem"), OptionalNumber(device, "temp"), OptionalNumber(device, "power_w"), OptionalNumber(device, "power_limit_w"), OptionalNumber(device, "fan"),
             Number(device, "enc"), Number(device, "dec"), Number(device, "sm_clock"), Number(device, "sm_clock_max"), Number(device, "mem_clock"), Number(device, "video_clock"),
@@ -215,12 +225,13 @@ internal sealed class GpuWidget : Form
             JsonText(device, "compute_cap"), JsonText(device, "source"), JsonText(device, "driver_model"), Strings(device, "throttle"), processes);
     }
 
-    private async Task SendTelemetryAsync(GpuData value)
+    private async Task SendTelemetryAsync(GpuData value, bool notify)
     {
         var alerts = await TelemetryClient.SendAsync(new TelemetrySnapshot(
             value.Index, value.PciBus, value.Name, value.Driver, value.VramUsed, value.VramTotal, value.Utilization, value.MemoryUtilization,
             value.Temperature, value.Power, value.PowerLimit, value.Fan, value.Throttle, value.Processes.Count,
             value.CpuLoad, value.RamUsed, value.RamTotal));
+        if (!notify) return;
         var activeKeys = alerts.Select(alert => alert.Key).ToHashSet();
         notifiedAlerts.IntersectWith(activeKeys);
         var alert = alerts.FirstOrDefault(item => !notifiedAlerts.Contains(item.Key));
@@ -259,7 +270,7 @@ internal sealed class GpuWidget : Form
     private static double OptionalNumber(JsonElement element, string name) =>
         element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null && value.TryGetDouble(out var number) ? number : double.NaN;
     private static string JsonText(JsonElement element, string name, string fallback = "—") =>
-        element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()) ? value.GetString()! : fallback;
+        element.ValueKind == JsonValueKind.Object && element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()) ? value.GetString()! : fallback;
     private static string[] Strings(JsonElement element, string name) =>
         element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.Array ? value.EnumerateArray().Where(item => item.ValueKind == JsonValueKind.String).Select(item => item.GetString()!).ToArray() : Array.Empty<string>();
 
