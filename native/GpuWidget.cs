@@ -382,8 +382,13 @@ internal sealed class GpuWidget : Form
             return;
         }
         var notes = string.IsNullOrWhiteSpace(result.Manifest?.ReleaseNotes) ? string.Empty : $"\n\n{result.Manifest.ReleaseNotes}";
-        var choice = MessageBox.Show(this, $"GPU Monitor v{result.LatestVersion?.ToString(3)} is available.{notes}\n\nOpen the download page?", "GPU Monitor Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-        if (choice == DialogResult.Yes && result.Manifest is not null) UpdateClient.OpenDownload(result.Manifest);
+        var choice = MessageBox.Show(this, $"GPU Monitor v{result.LatestVersion?.ToString(3)} is available.{notes}\n\nDownload and install it now? GPU Monitor will restart automatically.", "GPU Monitor Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+        if (choice == DialogResult.Yes && result.Manifest is not null)
+        {
+            var error = await UpdateClient.InstallAsync(result.Manifest);
+            if (error is not null) MessageBox.Show(this, $"Update failed.\n\n{error}", "GPU Monitor Updates", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            else Application.Exit();
+        }
     }
 
     protected override void OnPaint(PaintEventArgs e)

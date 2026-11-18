@@ -5,7 +5,7 @@ Unicode True
 !include "FileFunc.nsh"
 
 !define APP_NAME "GPU Monitor"
-!define APP_VERSION "0.7.2"
+!define APP_VERSION "0.8.0"
 !define COMPANY "KENRI"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\GPU Monitor"
 !define SETTINGS_KEY "Software\KENRI\GPU Monitor"
@@ -13,7 +13,7 @@ Unicode True
   !define TELEMETRY_ENDPOINT ""
 !endif
 !ifndef UPDATE_MANIFEST_URL
-  !define UPDATE_MANIFEST_URL ""
+  !define UPDATE_MANIFEST_URL "https://github.com/aahwit/Gpu-monitor/releases/latest/download/update.json"
 !endif
 
 Var ConsentDialog
@@ -43,6 +43,12 @@ Page custom ConsentPage ConsentPageLeave
 Function .onInit
   StrCpy $AutoUpdate 1
   StrCpy $AnonymousTelemetry 1
+  ReadRegDWORD $0 HKCU "${SETTINGS_KEY}" "AutoUpdate"
+  IfErrors +2
+  StrCpy $AutoUpdate $0
+  ReadRegDWORD $0 HKCU "${SETTINGS_KEY}" "AnonymousTelemetry"
+  IfErrors +2
+  StrCpy $AnonymousTelemetry $0
 FunctionEnd
 
 Function ConsentPage
@@ -120,6 +126,12 @@ Section "Install"
   ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6
   WriteRegStr HKCU "${SETTINGS_KEY}" "ConsentAcceptedAt" "$2-$1-$0 $4:$5:$6"
 SectionEnd
+
+Function .onInstSuccess
+  IfSilent 0 done
+  Exec '"$INSTDIR\GPU Monitor.exe"'
+  done:
+FunctionEnd
 
 Section "Uninstall"
   SetShellVarContext current

@@ -9,7 +9,7 @@ GPU Monitor is a native Windows widget that displays live GPU temperature, utili
 - Compact view shows only GPU workload and VRAM percentages.
 - Multi-GPU systems can switch adapters from the compact button, expanded header, or tray menu; the selection is remembered.
 - Integrated GPUs use shared GPU memory when dedicated VRAM is not meaningful, and unsupported sensor values are shown as `N/A`.
-- The installed version is visible at the lower-left corner, with optional HTTPS manifest-based update checks.
+- The installed version is visible at the lower-left corner. Updates are downloaded in-app, verified with SHA-256, installed silently, and restart the widget.
 - Clicking the card expands it to 480 × 620 with temperature, power, clocks, driver/CUDA, PCIe, engine utilization, and a scrollable per-process GPU-memory table.
 - The whole card changes color with temperature: blue → green → orange → red.
 - Hidden from the taskbar with an Open/Exit tray menu.

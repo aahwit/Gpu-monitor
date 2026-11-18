@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <AssemblyName>GPU Monitor</AssemblyName>
     <RootNamespace>GpuMonitor</RootNamespace>
-    <Version>0.7.2</Version>
+    <Version>0.8.0</Version>
     <Product>GPU Monitor</Product>
     <Description>Native floating GPU temperature and usage widget</Description>
     <ApplicationIcon>gpu-monitor.ico</ApplicationIcon>
