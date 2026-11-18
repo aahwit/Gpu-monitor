@@ -27,14 +27,14 @@ internal sealed class PreferencesDialog : Form
         updateCheck.Location = new Point(28, 97);
         updateCheck.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
         var updateInfo = new Label { Text = "Receive a notification when a new version is available.", AutoSize = true, Location = new Point(49, 124), ForeColor = Color.FromArgb(85, 95, 102) };
-        telemetryCheck.Text = "Send anonymous usage data";
+        telemetryCheck.Text = "Share GPU telemetry";
         telemetryCheck.Checked = preferences.AnonymousTelemetry;
         telemetryCheck.AutoSize = true;
         telemetryCheck.Location = new Point(28, 159);
         telemetryCheck.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
         var telemetryInfo = new Label
         {
-            Text = "Shares a random installation ID, app version, GPU model, online status,\nand general performance metrics. No usernames, computer names, application\nlists, or file paths are collected.",
+            Text = "Shares GPU UUID (if available), installation ID and health metrics.\nThe server stores a hash of the UUID to recognize the same card.\nNo usernames, process names or file paths are sent.",
             AutoSize = true,
             Location = new Point(49, 186),
             ForeColor = Color.FromArgb(85, 95, 102)

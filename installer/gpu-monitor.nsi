@@ -68,12 +68,12 @@ Function ConsentPage
   ${NSD_CreateLabel} 18u 78u 94% 18u "Receive a notification when a new version is available."
   Pop $0
 
-  ${NSD_CreateCheckbox} 0 105u 100% 18u "Send anonymous usage data"
+  ${NSD_CreateCheckbox} 0 105u 100% 18u "Share GPU telemetry"
   Pop $TelemetryCheckbox
   ${If} $AnonymousTelemetry == 1
     ${NSD_Check} $TelemetryCheckbox
   ${EndIf}
-  ${NSD_CreateLabel} 18u 126u 94% 42u "Shares a random installation ID, app version, GPU model, online status, and general performance metrics. No usernames, computer names, application lists, process names, model paths, or file paths are collected."
+  ${NSD_CreateLabel} 18u 126u 94% 42u "Shares GPU UUID (when available), installation ID, GPU model, app version and health metrics. The server stores a hash of the UUID to recognize the same card. No usernames, process names or file paths are sent."
   Pop $0
   ${NSD_CreateLabel} 18u 174u 94% 28u "You can change these settings later from Privacy & Updates in the system tray. Disabling anonymous usage data does not limit any features."
   Pop $0
