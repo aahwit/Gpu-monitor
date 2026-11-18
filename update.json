@@ -1,0 +1,6 @@
+{
+  "version": "0.8.1",
+  "download_url": "https://github.com/aahwit/Gpu-monitor/releases/download/v0.8.1/GPU-Monitor-0.8.1-Setup.exe",
+  "sha256": "e8995330be4127e82a80bcead22a1f820d4e516c512cf4281290836af71e5f5f",
+  "release_notes": "Automatic in-app updates with checksum verification, multi-GPU telemetry, and stable GPU identity."
+}

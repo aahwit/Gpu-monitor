@@ -17,6 +17,14 @@ jobs:
           dotnet-version: "7.0.x"
       - name: Publish widget
         run: dotnet publish native/GpuMonitor.csproj -c Release -o native/publish
+      - name: Restore GPU collector runtime
+        shell: pwsh
+        run: |
+          gh release download v0.8.1 --repo "${{ github.repository }}" --pattern gputaskman-runtime.zip
+          New-Item -ItemType Directory -Force src-tauri/resources/gputaskman | Out-Null
+          Expand-Archive gputaskman-runtime.zip src-tauri/resources/gputaskman -Force
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: Install NSIS
         run: choco install nsis --yes --no-progress
       - name: Build installer
