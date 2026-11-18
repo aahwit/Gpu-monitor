@@ -1,6 +1,7 @@
 export type HeatLevel = "low" | "high" | "danger" | "unknown";
 
 export type FleetGpu = {
+  identityKind?: "uuid" | "slot";
   id: string;
   installId: string;
   hardwareIdHash: string;
@@ -27,6 +28,7 @@ export type FleetGpu = {
 };
 
 export type FleetSummary = {
+  legacyDevices?: FleetGpu[];
   devices: FleetGpu[];
   total: number;
   online: number;

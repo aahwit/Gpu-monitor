@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace GpuMonitor;
 
 internal sealed record TelemetrySnapshot(
-    int GpuIndex, string GpuName, string Driver, double VramUsed, double VramTotal,
+    int GpuIndex, string PciBus, string GpuName, string Driver, double VramUsed, double VramTotal,
     double GpuLoad, double MemoryLoad, double Temperature, double Power, double PowerLimit,
     double Fan, string[] Throttle, int ProcessCount,
     double CpuLoad, double RamUsed, double RamTotal);
@@ -18,6 +18,23 @@ internal sealed record HealthAlert(string Key, string Severity, string Title, st
 internal static class TelemetryClient
 {
     private static readonly HttpClient Client = new() { Timeout = TimeSpan.FromSeconds(8) };
+
+    private static async Task<string?> ReadUuidAsync(string bus)
+    {
+        if (!System.Text.RegularExpressions.Regex.IsMatch(bus, @"^(?:[0-9a-fA-F]{4}|[0-9a-fA-F]{8}):[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")) return null;
+        var info = new System.Diagnostics.ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "nvidia-smi.exe"))
+        { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true };
+        foreach (var arg in new[] { "-i", bus, "--query-gpu=uuid", "--format=csv,noheader" }) info.ArgumentList.Add(arg);
+        try {
+            using var process = System.Diagnostics.Process.Start(info)!;
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            var output = process.StandardOutput.ReadToEndAsync();
+            try { await process.WaitForExitAsync(timeout.Token); }
+            catch (OperationCanceledException) { if (!process.HasExited) process.Kill(); return null; }
+            var uuid = (await output).Trim();
+            return process.ExitCode == 0 && uuid.StartsWith("GPU-", StringComparison.OrdinalIgnoreCase) && Guid.TryParseExact(uuid[4..], "D", out var id) && id != Guid.Empty ? "GPU-" + id : null;
+        } catch (System.ComponentModel.Win32Exception) { return null; }
+    }
 
     public static async Task<IReadOnlyList<HealthAlert>> SendAsync(TelemetrySnapshot sample, CancellationToken cancellationToken = default)
     {
@@ -48,6 +65,7 @@ internal static class TelemetryClient
             gpu = new
             {
                 index = sample.GpuIndex,
+                uuid = await ReadUuidAsync(sample.PciBus),
                 name = sample.GpuName,
                 driver = sample.Driver,
                 vram_used_bytes = (long)sample.VramUsed,

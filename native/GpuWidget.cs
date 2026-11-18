@@ -152,7 +152,10 @@ internal sealed class GpuWidget : Form
         refreshing = true;
         try
         {
-            data = await Task.Run(() => ReadGpu(selectedGpuIndex));
+            var requested = selectedGpuIndex;
+            var reading = await Task.Run(() => ReadGpu(requested));
+            if (requested != selectedGpuIndex) return;
+            data = reading;
             error = null;
             UpdateLocalDanger(data);
             if (DateTime.UtcNow - lastTelemetry >= TimeSpan.FromMinutes(1))
@@ -203,6 +206,7 @@ internal sealed class GpuWidget : Form
         }
         processes = processes.OrderByDescending(item => item.VramBytes).ThenByDescending(item => item.GpuPercent).ToList();
         return new GpuData(
+            gpuIndex, JsonText(device, "pci_bus", ""),
             JsonText(root, "gpu", "GPU"), JsonText(root, "driver"), JsonText(root, "cuda"), JsonText(root, "backend"), JsonText(root, "memory_note"),
             Number(root, "vram_used"), Number(root, "vram_total"), Number(root, "shared_used"), Number(adapter, "shared_system"), Number(cpu, "pct"), Number(ram, "used"), Number(ram, "total"),
             Number(device, "util_gpu"), Number(device, "util_mem"), OptionalNumber(device, "temp"), OptionalNumber(device, "power_w"), OptionalNumber(device, "power_limit_w"), OptionalNumber(device, "fan"),
@@ -214,7 +218,7 @@ internal sealed class GpuWidget : Form
     private async Task SendTelemetryAsync(GpuData value)
     {
         var alerts = await TelemetryClient.SendAsync(new TelemetrySnapshot(
-            selectedGpuIndex, value.Name, value.Driver, value.VramUsed, value.VramTotal, value.Utilization, value.MemoryUtilization,
+            value.Index, value.PciBus, value.Name, value.Driver, value.VramUsed, value.VramTotal, value.Utilization, value.MemoryUtilization,
             value.Temperature, value.Power, value.PowerLimit, value.Fan, value.Throttle, value.Processes.Count,
             value.CpuLoad, value.RamUsed, value.RamTotal));
         var activeKeys = alerts.Select(alert => alert.Key).ToHashSet();
@@ -592,6 +596,7 @@ internal sealed class GpuWidget : Form
     private sealed record GpuAdapter(int Index, string Name);
     private sealed record GpuProcess(int Pid, string Name, string Kind, double GpuPercent, double VramBytes, double SharedBytes, string[] Runtimes, string[] Models);
     private sealed record GpuData(
+        int Index, string PciBus,
         string Name, string Driver, string Cuda, string Backend, string MemoryNote,
         double VramUsed, double VramTotal, double SharedUsed, double SharedTotal, double CpuLoad, double RamUsed, double RamTotal,
         double Utilization, double MemoryUtilization, double Temperature, double Power, double PowerLimit, double Fan,

@@ -58,7 +58,11 @@ export async function getHistory(id: string, limitCount = 60) {
 }
 
 export async function getFleetSummary(): Promise<FleetSummary> {
-  const devices = await getDevices();
+  const rows = await getDevices();
+  const verified = rows.filter(row => row.identityKind === "uuid");
+  // Keep unverified historical observations accessible without attributing them to a physical card.
+  const legacyDevices = rows.filter(row => !row.identityKind && !isOnline(row) && verified.some(v => v.installId === row.installId && v.name === row.name && v.receivedAt > row.receivedAt));
+  const devices = rows.filter(row => !legacyDevices.includes(row) && !(row.identityKind === "slot" && verified.some(v => v.installId === row.installId && v.gpuIndex === row.gpuIndex && v.name === row.name && v.receivedAt >= row.receivedAt)));
   const heat: FleetSummary["heat"] = { low: 0, high: 0, danger: 0, unknown: 0 };
   const models = new Map<string, { name: string; count: number; online: number }>();
   let online = 0;
@@ -71,5 +75,5 @@ export async function getFleetSummary(): Promise<FleetSummary> {
     if (currentOnline) model.online += 1;
     models.set(device.name, model);
   }
-  return { devices, total: devices.length, online, offline: devices.length - online, heat, models: [...models.values()].sort((a, b) => b.count - a.count) };
+  return { devices, legacyDevices, total: devices.length, online, offline: devices.length - online, heat, models: [...models.values()].sort((a, b) => b.count - a.count) };
 }

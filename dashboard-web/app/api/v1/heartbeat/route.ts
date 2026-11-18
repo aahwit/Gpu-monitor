@@ -25,8 +25,11 @@ export async function POST(request: Request) {
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "";
     const ipHash = createHash("sha256").update(`${forwarded}|${process.env.INGEST_API_KEY ?? ""}`).digest("hex");
     const temperature = numeric(gpu?.temperature_c, -1);
+    const uuid = typeof gpu.uuid === "string" ? gpu.uuid.trim().toLowerCase() : "";
+    if (uuid && (!/^gpu-[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(uuid) || uuid === "gpu-00000000-0000-0000-0000-000000000000")) return Response.json({ error: "Invalid GPU UUID" }, { status: 400 });
     const device: FleetGpu = {
-      id: `${installId}-${gpuIndex}`,
+      id: uuid ? `uuid-${createHash("sha256").update(uuid).digest("hex")}` : `${installId}-${gpuIndex}`,
+      identityKind: uuid ? "uuid" : Object.hasOwn(gpu, "uuid") ? "slot" : undefined,
       installId,
       hardwareIdHash: text(payload?.hardware_id_hash, "unknown"),
       appVersion: text(payload?.app_version, "unknown"),

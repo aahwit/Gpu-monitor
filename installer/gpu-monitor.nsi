@@ -5,7 +5,7 @@ Unicode True
 !include "FileFunc.nsh"
 
 !define APP_NAME "GPU Monitor"
-!define APP_VERSION "0.7.0"
+!define APP_VERSION "0.7.1"
 !define COMPANY "KENRI"
 !define UNINSTALL_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\GPU Monitor"
 !define SETTINGS_KEY "Software\KENRI\GPU Monitor"
@@ -23,13 +23,13 @@ Var AutoUpdate
 Var AnonymousTelemetry
 
 Name "${APP_NAME}"
-OutFile "..\GPU-Monitor-0.7.0-Setup.exe"
+OutFile "..\GPU-Monitor-${APP_VERSION}-Setup.exe"
 InstallDir "$LOCALAPPDATA\GPU Monitor"
 RequestExecutionLevel user
 SetCompressor /SOLID lzma
 Icon "..\src-tauri\icons\icon.ico"
 UninstallIcon "..\src-tauri\icons\icon.ico"
-BrandingText "GPU Monitor 0.7.0 — Native Windows Widget"
+BrandingText "GPU Monitor ${APP_VERSION} — Native Windows Widget"
 
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN "$INSTDIR\GPU Monitor.exe"

@@ -52,6 +52,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <div className="risk-note"><AlertTriangle size={17} /><span><strong>Thermal policy</strong>Danger begins at 85°C. The desktop widget alerts locally even if the network is down.</span></div>
           </aside>
         </section>
+        {!!summary.legacyDevices?.length && <details className="panel"><summary>Unverified historical records ({summary.legacyDevices.length}) · excluded from fleet totals</summary><DeviceTable devices={summary.legacyDevices} /></details>}
       </div>
     </main>
   );
