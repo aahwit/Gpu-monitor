@@ -20,7 +20,8 @@ jobs:
       - name: Install NSIS
         run: choco install nsis --yes --no-progress
       - name: Build installer
-        run: makensis installer/gpu-monitor.nsi
+        shell: pwsh
+        run: '& "${env:ProgramFiles(x86)}\NSIS\makensis.exe" installer/gpu-monitor.nsi'
       - name: Create update manifest
         shell: pwsh
         run: |
