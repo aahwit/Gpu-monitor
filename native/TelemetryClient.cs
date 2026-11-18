@@ -70,7 +70,12 @@ internal static class TelemetryClient
         };
 
         using var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-        using var response = await Client.PostAsync(endpoint, content, cancellationToken);
+        using var request = new HttpRequestMessage(HttpMethod.Post, endpoint) { Content = content };
+        var key = Environment.GetEnvironmentVariable("GPU_MONITOR_INGEST_KEY");
+        if (!string.IsNullOrWhiteSpace(key) && endpoint.Scheme == Uri.UriSchemeHttps &&
+            Uri.TryCreate(Environment.GetEnvironmentVariable("GPU_MONITOR_TELEMETRY_ENDPOINT"), UriKind.Absolute, out var pinned) && pinned == endpoint)
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
+        using var response = await Client.SendAsync(request, cancellationToken);
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Telemetry server returned {(int)response.StatusCode}: {responseBody}");
         using var json = JsonDocument.Parse(responseBody);
